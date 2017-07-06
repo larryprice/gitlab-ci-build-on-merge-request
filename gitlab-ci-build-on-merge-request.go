@@ -148,31 +148,38 @@ func main() {
 }
 
 func resolveTrigger(baseURL string, privateToken string, projectId int) (*trigger, error) {
-	fullURL := fmt.Sprintf(
-		"%s/api/v3/projects/%d/triggers?private_token=%s",
+	getTriggersUrl := fmt.Sprintf(
+		"%s/api/v4/projects/%d/triggers?private_token=%s",
 		baseURL,
 		projectId,
 		privateToken)
-	res, err := http.Get(fullURL)
+	res, err := http.Get(getTriggersUrl)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 	var triggers []trigger
+
 	if err := json.NewDecoder(res.Body).Decode(&triggers); err != nil {
-		return nil, fmt.Errorf("Failed to deserialize response of GET %s (%s)", fullURL, err.Error())
+		return nil, fmt.Errorf("Failed to deserialize response of GET %s (%s)", getTriggersUrl, err.Error())
 	}
 	if len(triggers) == 0 {
-		res, err := http.PostForm(fullURL, url.Values{})
+		postTriggerUrl := fmt.Sprintf(
+			"%s/api/v4/projects/%d/trigger/pipeline?private_token=%s",
+			baseURL,
+			projectId,
+			privateToken)
+		res, err := http.PostForm(postTriggerUrl, url.Values{})
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
 		if res.StatusCode != 201 {
-			return nil, fmt.Errorf("POST %s resulted in %d", fullURL, res.StatusCode)
+			return nil, fmt.Errorf("POST %s resulted in %d", postTriggerUrl, res.StatusCode)
 		}
+
 		if err := json.NewDecoder(res.Body).Decode(&triggers); err != nil {
-			return nil, fmt.Errorf("Failed to deserialize response of POST %s (%s)", fullURL, err.Error())
+			return nil, fmt.Errorf("Failed to deserialize response of POST %s (%s)", postTriggerUrl, err.Error())
 		}
 	}
 	return &triggers[0], nil
