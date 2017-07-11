@@ -1,11 +1,9 @@
 # gitlab-ci-build-on-merge-request
 
-Missing "build on Merge Request" feature of Gitlab CI.
+Missing "build on Merge Request" feature of Gitlab CI with the v4 API.
 
 Build is triggered when merge request is first opened and when commits are added to the source branch later on
 (up until the merge/close event).
-
-> Tested on Gitlab CI 8.7.2.
 
 ## Setup
 
